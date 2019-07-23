@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - FFT$Complex",
+            "request": "launch",
+            "mainClass": "FFT$Complex"
+        },
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - Main",
+            "request": "launch",
+            "mainClass": "HeartRate.Main"
+        },
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - Data",
+            "request": "launch",
+            "mainClass": "Main"
+        }
+    ]
+}
