@@ -21,11 +21,11 @@ public class ManageConnectThread extends Thread {
         outputStream.write(output.toByteArray());
     }
 
-    String temp =new String();
+    private String temp = "";
     public String[] receiveData(BluetoothSocket socket) throws IOException{
         byte[] buffer = new byte[1024];
         while (true){
-            ByteArrayInputStream input = new ByteArrayInputStream(buffer);
+            //ByteArrayInputStream input = new ByteArrayInputStream(buffer);
             InputStream inputStream = socket.getInputStream();
             int bytes = inputStream.read(buffer);
 
@@ -39,4 +39,3 @@ public class ManageConnectThread extends Thread {
         }
     }
 }
-

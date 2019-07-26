@@ -232,7 +232,7 @@ public class MainActivity extends AppCompatActivity {
         chart.invalidate();
     }
 
-    public void writeData() {
+    /*public void writeData() {
         ArrayList<Double> tg = new ArrayList<>();
         ArrayList<Double> dt = new ArrayList<>();
         for (double i = 0; i <= 100000; i += 0.1) {
@@ -241,7 +241,7 @@ public class MainActivity extends AppCompatActivity {
         }
         //Data Sample_1 = new Data(tg.toArray(new Double[tg.size()]), dt.toArray(new Double[dt.size()]));
         FileIO.saveData(tg.toArray(new Double[tg.size()]), dt.toArray(new Double[dt.size()]));
-    }
+    }*/
 
     private PopupWindow popupWindow() {
         final PopupWindow popupWindow = new PopupWindow(this);

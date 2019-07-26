@@ -2,13 +2,14 @@ package com.application.heartrate;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -18,17 +19,16 @@ import com.application.heartrate.Thread.ConnectThread;
 import com.application.heartrate.Thread.ManageConnectThread;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.stream.Stream;
+
 
 public class Bluetooth_Connected extends AppCompatActivity {
     private BluetoothAdapter BTAdapter = BluetoothAdapter.getDefaultAdapter();
-    private BluetoothDevice bluetoothDevice;
     private ManageConnectThread manageConnectThread = new ManageConnectThread();
     private ConnectThread connectThread;
     private ShowDataTask showDataTask = new ShowDataTask();
+    protected PowerManager.WakeLock mWakeLock;
     String Address;
     Button Cancel_btn;
     boolean Status;
@@ -40,11 +40,13 @@ public class Bluetooth_Connected extends AppCompatActivity {
         setContentView(R.layout.activity_bluetooth__connected);
         final Intent intent = getIntent();
         Bundle bundle = intent.getExtras();
+        final PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+
         if (bundle != null) {
             Address = bundle.getString("Selected_Device");
         }
 
-        bluetoothDevice = BTAdapter.getRemoteDevice(Address);
+        BluetoothDevice bluetoothDevice = BTAdapter.getRemoteDevice(Address);
         connectThread = new ConnectThread(bluetoothDevice);
         Status = connectThread.connect();
 
@@ -53,10 +55,7 @@ public class Bluetooth_Connected extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 showDataTask.cancel(true);
-                //connectThread.cancel();
                 finish();
-                /*Intent intent1 = new Intent(Bluetooth_Connected.this, MainActivity.class);
-                startActivity(intent1);*/
             }
         });
 
@@ -76,13 +75,19 @@ public class Bluetooth_Connected extends AppCompatActivity {
         }
 
         final Button Start_btn = findViewById(R.id.START_BTN);
-        Start_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Start_btn.setEnabled(false);
-                showDataTask.execute();
-            }
-        });
+        if (connectThread.mySocket() != null) {
+            Start_btn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Start_btn.setEnabled(false);
+                    showDataTask.execute();
+                    Bluetooth_Connected.this.mWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK,"mytag");
+                    Bluetooth_Connected.this.mWakeLock.acquire();
+                }
+            });
+        } else {
+             Start_btn.setEnabled(false);
+        }
     }
 
     protected void onPause(){
@@ -90,26 +95,7 @@ public class Bluetooth_Connected extends AppCompatActivity {
             connectThread.cancel();
     }
 
-    /*protected void onResume() {
-        super.onResume();
-        bluetoothDevice = BTAdapter.getRemoteDevice(Address);
-        connectThread = new ConnectThread(bluetoothDevice);
-
-        if (!connectThread.mySocket().isConnected()) {
-            Status = connectThread.connect();
-        }
-        TextView Status_TV = findViewById(R.id.STATUS);
-        if (Status) {
-            Status_TV.setText("KẾT NỐI THÀNH CÔNG");
-            Status_TV.setTextColor(Color.GREEN);
-        } else {
-            Status_TV.setText("KẾT NỐI KHÔNG THÀNH CÔNG");
-            Status_TV.setTextColor(Color.RED);
-        }
-    }*/
-
-    private class ShowDataTask extends AsyncTask<Void, String, Void> {
-        int i = 0;
+    protected class ShowDataTask extends AsyncTask<Void, String, Void> {
         ArrayList<String> AllInput = new ArrayList<>();
         @Override
         protected Void doInBackground(Void... voids) {
@@ -120,7 +106,7 @@ public class Bluetooth_Connected extends AppCompatActivity {
                     //Log.d("DATA", Input);
                     //Log.d("DATA", String.valueOf(Input));
                     AllInput.addAll(Arrays.asList(Input));
-                    publishProgress( String.valueOf(Input));
+                    publishProgress(Input);
                 }
                 catch (IOException e){
                     Log.d("RECEIVE_ERROR", e.toString());
@@ -134,7 +120,8 @@ public class Bluetooth_Connected extends AppCompatActivity {
             super.onProgressUpdate(values);
             TIME_TV = findViewById(R.id.TIME_TEXTVIEW);
             DATA_TV = findViewById(R.id.DATA_TEXTVIEW);
-            TIME_TV.setText(String.valueOf(i++));
+            //TIME_TV.setText(String.valueOf(i));
+            //i++;
             DATA_TV.setText(Arrays.deepToString(values));
         }
 
@@ -142,7 +129,10 @@ public class Bluetooth_Connected extends AppCompatActivity {
         protected void onCancelled(Void aVoid) {
             super.onCancelled(aVoid);
             String[] temp = AllInput.toArray(new String[AllInput.size()]);
-            FileIO.saveData(temp);
+            if (temp.length != 0) {
+                FileIO.saveData(temp);
+            }
+            Bluetooth_Connected.this.mWakeLock.release();
         }
 
         @Override
