@@ -42,7 +42,6 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<Entry> values = new ArrayList<>();
     Data DataSource = new Data();
     PopupWindow popupWindow;
-    boolean gotTextFile = false;
     ViewPortHandler viewPortHandler;
 
     loadDataTask loadDataTask = new loadDataTask();

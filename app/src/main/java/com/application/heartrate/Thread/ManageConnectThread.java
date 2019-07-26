@@ -1,9 +1,7 @@
 package com.application.heartrate.Thread;
 
 import android.bluetooth.BluetoothSocket;
-import android.util.Log;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
