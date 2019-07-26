@@ -56,10 +56,6 @@ public class MainActivity extends AppCompatActivity {
         isReadStoragePermissionGranted();
         isWriteStoragePermissionGranted();
 
-        //DataSource = FileIO.readData("data.txt");
-        //setDataAndTime();
-
-        //loadDataTask.execute();
 
         chart = findViewById(R.id.LineChart);
         viewPortHandler = chart.getViewPortHandler();
@@ -185,19 +181,16 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    Double[] Time;
-    Double[] Data;
 
-    private void setDataAndTime() {
-        Data = DataSource.getData();
-        Time = DataSource.getThoiGian();
-    }
 
     public ArrayList setData() {
         float X, Y;
         values.clear();
-        int size = Time.length;
 
+        final Double[] Data = DataSource.getData();
+        final Double[] Time = DataSource.getThoiGian();
+
+        int size = Time.length;
         float scaleX = viewPortHandler.getScaleX();
         if (size > 20000) {
 
@@ -313,13 +306,10 @@ public class MainActivity extends AppCompatActivity {
             }
         return null;
         }
-        protected void onProgressUpdate(Void avoid){
-            Toast.makeText(MainActivity.this, "Loading", Toast.LENGTH_LONG).show();
-        }
+
         protected void onPostExecute(Void avoid){
             super.onPostExecute(avoid);
-            //viewPortHandler.setZoom(1f,1f);
-            setDataAndTime();
+
             drawChart(setData());
             Toast.makeText(MainActivity.this, "Completed", Toast.LENGTH_LONG).show();
         }
