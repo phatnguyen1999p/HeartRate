@@ -63,7 +63,32 @@ class FileIO{
         }
         return false;
     }
+    static boolean saveData(String[] Data){
+        LocalDateTime now = LocalDateTime.now();
+        String FileName = String.valueOf(now) + ".txt";
+
+        try {
+            File file = new File(DIRECTION + "/" + FileName);
+            file.createNewFile();
+
+            FileOutputStream fileOutputStream = new FileOutputStream(file,true);
+            for (int i = 1; i < Data.length; i++) {
+                fileOutputStream.write((Data[i] + System.getProperty("line.separator")).getBytes());
+            }
+            return true;
+        }
+        catch (FileNotFoundException ex){
+            ex.printStackTrace();
+            return false;
+        }
+        catch (IOException ex){
+            ex.printStackTrace();
+            return false;
+        }
+
+    }
     static ArrayList<File> findTxtFiles(){
+        fileData.clear();
         File direction = new File(path);
         File[] files = direction.listFiles();
         for (File file : files) {

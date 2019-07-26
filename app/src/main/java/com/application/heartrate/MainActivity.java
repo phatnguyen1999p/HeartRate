@@ -40,7 +40,7 @@ import static java.lang.Math.sin;
 public class MainActivity extends AppCompatActivity {
     private LineChart chart;
     private ArrayList<Entry> values = new ArrayList<>();
-    Data DataSource = null;
+    Data DataSource = new Data();
     PopupWindow popupWindow;
     boolean gotTextFile = false;
     ViewPortHandler viewPortHandler;
@@ -57,12 +57,15 @@ public class MainActivity extends AppCompatActivity {
         isReadStoragePermissionGranted();
         isWriteStoragePermissionGranted();
 
-        DataSource = FileIO.readData("data.txt");
-        setDataAndTime();
+        //DataSource = FileIO.readData("data.txt");
+        //setDataAndTime();
 
+        //loadDataTask.execute();
 
         chart = findViewById(R.id.LineChart);
         viewPortHandler = chart.getViewPortHandler();
+        viewPortHandler.setMaximumScaleX(30f);
+        viewPortHandler.setMaximumScaleY(1f);
 
         chart.setTouchEnabled(true);
         chart.setPinchZoom(true);
@@ -70,8 +73,6 @@ public class MainActivity extends AppCompatActivity {
         chart.setGridBackgroundColor(Color.BLUE);
         chart.setHardwareAccelerationEnabled(true);
         chart.setAutoScaleMinMaxEnabled(true);
-        popupWindow = popupWindow();
-        //drawChart(setData());
 
         chart.setOnChartGestureListener(new OnChartGestureListener() {
             @Override
@@ -135,6 +136,24 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        popupWindow = popupWindow();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        //loadDataTask.cancel(true);
+    }
+
+
     public boolean isReadStoragePermissionGranted() {
         if (Build.VERSION.SDK_INT >= 23) {
             if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
@@ -185,13 +204,13 @@ public class MainActivity extends AppCompatActivity {
 
             int numberForScaling = size / 5000;
             for (int i = 0; i < size; i += numberForScaling / scaleX) {
-                X = Time[i].floatValue();
+                X = Time[i].floatValue() - Time[1].floatValue();
                 Y = Data[i].floatValue();
                 values.add(new Entry(X, Y));
             }
         } else {
             for (int i = 0; i < Time.length; i++) {
-                X = Time[i].floatValue();
+                X = Time[i].floatValue() - Time[1].floatValue();
                 Y = Data[i].floatValue();
                 values.add(new Entry(X, Y));
             }
@@ -200,10 +219,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void drawChart(ArrayList values) {
+
         LineDataSet dataSet = new LineDataSet(values, "HÀM THEO THỜI GIAN");
         LineData lineData = new LineData(dataSet);
 
-        dataSet.setColor(Color.BLUE);
+        dataSet.setColor(Color.RED);
         dataSet.setDrawValues(false);
         dataSet.setDrawCircles(false);
 
@@ -223,10 +243,8 @@ public class MainActivity extends AppCompatActivity {
         FileIO.saveData(tg.toArray(new Double[tg.size()]), dt.toArray(new Double[dt.size()]));
     }
 
-
     private PopupWindow popupWindow() {
         final PopupWindow popupWindow = new PopupWindow(this);
-        loadDataTask.execute();
 
         popupWindow.setFocusable(true);
         popupWindow.setWidth(WindowManager.LayoutParams.WRAP_CONTENT);
@@ -235,12 +253,10 @@ public class MainActivity extends AppCompatActivity {
         ListView listViewData = new ListView(this);
 
         ArrayList<String> temp = new ArrayList<>();
-        if (!gotTextFile) {
-            ArrayList<File> DataFiles = FileIO.findTxtFiles();
-            for (File i : DataFiles) {
-                temp.add(i.getName());
-            }
-            gotTextFile = true;
+        ArrayList<File> DataFiles = new ArrayList<>( FileIO.findTxtFiles());
+
+        for (File i : DataFiles) {
+            temp.add(i.getName());
         }
 
         ArrayAdapter<String> ListContent = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, temp);
@@ -303,10 +319,10 @@ public class MainActivity extends AppCompatActivity {
         }
         protected void onPostExecute(Void avoid){
             super.onPostExecute(avoid);
+            //viewPortHandler.setZoom(1f,1f);
             setDataAndTime();
             drawChart(setData());
             Toast.makeText(MainActivity.this, "Completed", Toast.LENGTH_LONG).show();
         }
     }
-
 }

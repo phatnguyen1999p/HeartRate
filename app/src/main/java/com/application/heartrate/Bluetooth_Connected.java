@@ -19,7 +19,9 @@ import com.application.heartrate.Thread.ManageConnectThread;
 
 import java.io.IOException;
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.stream.Stream;
 
 public class Bluetooth_Connected extends AppCompatActivity {
     private BluetoothAdapter BTAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -73,10 +75,11 @@ public class Bluetooth_Connected extends AppCompatActivity {
             Status_TV.setTextColor(Color.RED);
         }
 
-        Button Start_btn = findViewById(R.id.START_BTN);
+        final Button Start_btn = findViewById(R.id.START_BTN);
         Start_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Start_btn.setEnabled(false);
                 showDataTask.execute();
             }
         });
@@ -107,12 +110,16 @@ public class Bluetooth_Connected extends AppCompatActivity {
 
     private class ShowDataTask extends AsyncTask<Void, String, Void> {
         int i = 0;
+        ArrayList<String> AllInput = new ArrayList<>();
         @Override
         protected Void doInBackground(Void... voids) {
+
             while (connectThread.mySocket().isConnected()) {
                 try {
-                    String Input = manageConnectThread.receiveData(connectThread.mySocket());
-                    Log.d("DATA", String.valueOf(Input));
+                    String[] Input = manageConnectThread.receiveData(connectThread.mySocket());
+                    //Log.d("DATA", Input);
+                    //Log.d("DATA", String.valueOf(Input));
+                    AllInput.addAll(Arrays.asList(Input));
                     publishProgress( String.valueOf(Input));
                 }
                 catch (IOException e){
@@ -129,6 +136,18 @@ public class Bluetooth_Connected extends AppCompatActivity {
             DATA_TV = findViewById(R.id.DATA_TEXTVIEW);
             TIME_TV.setText(String.valueOf(i++));
             DATA_TV.setText(Arrays.deepToString(values));
+        }
+
+        @Override
+        protected void onCancelled(Void aVoid) {
+            super.onCancelled(aVoid);
+            String[] temp = AllInput.toArray(new String[AllInput.size()]);
+            FileIO.saveData(temp);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
         }
     }
 }
